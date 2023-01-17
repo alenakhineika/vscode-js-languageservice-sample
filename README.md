@@ -9,7 +9,7 @@ This extension contributes a new `mongodb` language. The new language:
 - Has MongoDB syntax highlighting.
 - Completes `mongodbMethod` to illustrate IntelliSense for MongoDB API.
 
-The extension also embeds the `javascript` language to support its language features such as syntax highlighting and code completion.
+The extension also embeds the `javascript` language to support its language features such as syntax highlighting and code completion. See [VSCode Embedded Programming Languages](https://code.visualstudio.com/api/language-extensions/embedded-languages) for more info.
 
 <img src="./multiple-languages-support.png" alt="Multiple Languages Support.png" width="600"/>
 

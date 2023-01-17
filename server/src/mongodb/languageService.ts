@@ -11,7 +11,7 @@ export default class MongoDBService {
     this._connection = connection;
   }
 
-  async provideCompletionItems(): Promise<CompletionItem[]> {
+  async doComplete(): Promise<CompletionItem[]> {
     return [{
       label: 'mongodbMethod',
       kind: CompletionItemKind.Method

@@ -216,7 +216,7 @@ export default class JavascriptService {
     };
   }
 
-  async provideCompletionItems(
+  async doComplete(
     document: TextDocument,
     position: { line: number; character: number },
   ): Promise<CompletionItem[]> {

@@ -147,8 +147,8 @@ connection.onCompletion(async (params: TextDocumentPositionParams) => {
     return [];
   }
 
-  const mongodbCompletions = await mongoDBService.provideCompletionItems();
-  const javascriptCompletions = await javascriptService.provideCompletionItems(document, params.position);
+  const mongodbCompletions = await mongoDBService.doComplete();
+  const javascriptCompletions = await javascriptService.doComplete(document, params.position);
 
   return [...mongodbCompletions, ...javascriptCompletions];
 });

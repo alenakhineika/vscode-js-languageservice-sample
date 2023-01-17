@@ -1,0 +1,24 @@
+{
+  "name": "vscode-js-languageservice-sample-server",
+  "description": "The language server",
+  "version": "0.0.1",
+  "author": "Alena Khineika",
+  "license": "MIT",
+  "engines": {
+    "node": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alenakhineika/vscode-js-languageservice-sample"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.38.0",
+    "@typescript-eslint/parser": "^5.38.0",
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "vscode-languageserver": "^8.0.2",
+    "vscode-languageserver-textdocument": "^1.0.7"
+  },
+  "scripts": {}
+}

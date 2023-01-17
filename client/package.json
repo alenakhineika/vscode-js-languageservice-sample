@@ -1,0 +1,23 @@
+{
+  "name": "vscode-js-languageservice-sample-client",
+  "description": "VSCode part of a language server",
+  "author": "Alena Khineika",
+  "license": "MIT",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alenakhineika/vscode-js-languageservice-sample"
+  },
+  "engines": {
+    "vscode": "^1.71.0",
+    "node": "^16.16.0",
+    "npm": "^8.8.0"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^8.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/vscode": "^1.43.0"
+  }
+}

@@ -111,7 +111,9 @@ const convertKind = (kind: string): CompletionItemKind => {
   }
 };
 
+// Server folder.
 const serverPath = basename(__dirname) === 'dist' ? dirname(__dirname) : dirname(dirname(__dirname));
+// TypeScript library folder.
 const librarPath = join(serverPath, '../node_modules/typescript/lib');
 const contents: { [name: string]: string } = {};
 
@@ -152,6 +154,7 @@ export default class JavascriptService {
     };
     let currentTextDocument = TextDocument.create('init', 'javascript', 1, '');
 
+    // Create the language service host to allow the LS to communicate with the host.
     const host: ts.LanguageServiceHost = {
       getCompilationSettings: () => compilerOptions,
       getScriptFileNames: () => [currentTextDocument.uri],
@@ -200,9 +203,11 @@ export default class JavascriptService {
       }
     };
 
+    // Create the language service files.
     const jsLanguageService = ts.createLanguageService(host);
 
     return {
+      // Return a new instance of the language service.
       getLanguageService(jsDocument: TextDocument): ts.LanguageService {
         currentTextDocument = jsDocument;
         return jsLanguageService;

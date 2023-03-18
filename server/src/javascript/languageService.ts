@@ -237,7 +237,7 @@ export default class JavascriptService {
     return jsCompletion?.entries.map((entry) => {
       // Data used for resolving item details (see 'doResolve').
       const data = {
-        languageId: 'mongodb',
+        languageId: 'javascript',
         uri: document.uri,
         offset: offset
       };

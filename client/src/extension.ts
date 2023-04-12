@@ -22,7 +22,7 @@ export function activate(context: ExtensionContext) {
     debug: {
       module: serverModule,
       transport: TransportKind.ipc,
-    }
+    },
   };
 
   // Options to control the language client.
@@ -30,7 +30,7 @@ export function activate(context: ExtensionContext) {
     documentSelector: [
       { scheme: 'untitled', language: 'mongodb' },
       { scheme: 'file', language: 'mongodb' },
-    ]
+    ],
   };
 
   // Create the language client.
@@ -45,10 +45,7 @@ export function activate(context: ExtensionContext) {
   client.start();
 
   // Send the extension path to the server.
-  void client.sendRequest(
-    'SET_EXTENSION_PATH',
-    context.extensionPath
-  );
+  void client.sendRequest('SET_EXTENSION_PATH', context.extensionPath);
 }
 
 export function deactivate(): Thenable<void> | undefined {

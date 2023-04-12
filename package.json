@@ -44,8 +44,9 @@
     "vscode:prepublish": "cd client && npm install && cd .. && npm run compile",
     "compile": "tsc -b",
     "watch": "tsc -b -w",
-    "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd .."
+    "lint": "eslint . && prettier --check .",
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+    "reformat": "prettier --write ."
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",
@@ -53,6 +54,7 @@
     "@typescript-eslint/eslint-plugin": "^4.16.0",
     "@typescript-eslint/parser": "^4.16.0",
     "eslint": "^7.21.0",
+    "prettier": "^2.8.7",
     "typescript": "^4.8.4"
   }
 }

@@ -5,6 +5,7 @@ LSP Example for multiple languages support.
 ## Functionality
 
 This extension contributes a new `mongodb` language. The new language:
+
 - Works with the `.mongodb` file extension.
 - Has MongoDB syntax highlighting.
 - Completes `mongodbMethod` to illustrate IntelliSense for MongoDB API.

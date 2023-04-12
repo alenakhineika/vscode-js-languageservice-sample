@@ -46,7 +46,7 @@ const enum Kind {
   warning = 'warning',
   string = 'string',
   parameter = 'parameter',
-  typeParameter = 'type parameter'
+  typeParameter = 'type parameter',
 }
 
 // eslint-disable-next-line complexity
@@ -114,9 +114,13 @@ const convertKind = (kind: string): CompletionItemKind => {
 };
 
 const GLOBAL_CONFIG_LIBRARY_NAME = 'global.d.ts';
+const TYPESCRIPT_CONFIG_LIBRARY_NAME = 'lib.es2022.full.d.ts';
 
 // Server path.
-const serverPath = basename(__dirname) === 'dist' ? dirname(__dirname) : dirname(dirname(__dirname));
+const serverPath =
+  basename(__dirname) === 'dist'
+    ? dirname(__dirname)
+    : dirname(dirname(__dirname));
 // TypeScript library path.
 const typescriptLibrarPath = join(serverPath, 'node_modules/typescript/lib');
 
@@ -178,17 +182,19 @@ export default class JavascriptService {
     const compilerOptions = {
       allowNonTsExtensions: true,
       allowJs: true,
-      lib: ['lib.es2020.full.d.ts'],
       target: ts.ScriptTarget.Latest,
       moduleResolution: ts.ModuleResolutionKind.Classic,
-      experimentalDecorators: false
+      experimentalDecorators: false,
     };
     let currentTextDocument = TextDocument.create('init', 'javascript', 1, '');
 
     // Create the language service host to allow the LS to communicate with the host.
     const host: ts.LanguageServiceHost = {
       getCompilationSettings: () => compilerOptions,
-      getScriptFileNames: () => [currentTextDocument.uri, GLOBAL_CONFIG_LIBRARY_NAME],
+      getScriptFileNames: () => [
+        currentTextDocument.uri,
+        GLOBAL_CONFIG_LIBRARY_NAME,
+      ],
       getScriptKind: () => ts.ScriptKind.JS,
       getScriptVersion: (fileName: string) => {
         if (fileName === currentTextDocument.uri) {
@@ -206,14 +212,14 @@ export default class JavascriptService {
         return {
           getText: (start, end) => text.substring(start, end),
           getLength: () => text.length,
-          getChangeRange: () => undefined
+          getChangeRange: () => undefined,
         };
       },
       getCurrentDirectory: () => '',
-      getDefaultLibFileName: () => 'es2020.full',
+      getDefaultLibFileName: () => TYPESCRIPT_CONFIG_LIBRARY_NAME,
       readFile: (): string | undefined => undefined,
       fileExists: (): boolean => false,
-      directoryExists: (): boolean => false
+      directoryExists: (): boolean => false,
     };
 
     // Create the language service files.
@@ -230,7 +236,7 @@ export default class JavascriptService {
       },
       dispose() {
         jsLanguageService.dispose();
-      }
+      },
     };
   }
 
@@ -239,33 +245,43 @@ export default class JavascriptService {
    */
   async doComplete(
     document: TextDocument,
-    position: { line: number; character: number },
+    position: { line: number; character: number }
   ): Promise<CompletionItem[]> {
-    const jsDocument = TextDocument.create(document.uri, 'javascript', document.version, document.getText());
+    const jsDocument = TextDocument.create(
+      document.uri,
+      'javascript',
+      document.version,
+      document.getText()
+    );
     const jsLanguageService = await this._host.getLanguageService(jsDocument);
     const offset = jsDocument.offsetAt(position);
     const jsCompletion = jsLanguageService.getCompletionsAtPosition(
       jsDocument.uri,
       offset,
-      { includeExternalModuleExports: false, includeInsertTextCompletions: false }
+      {
+        includeExternalModuleExports: false,
+        includeInsertTextCompletions: false,
+      }
     );
 
-    return jsCompletion?.entries.map((entry) => {
-      // Data used for resolving item details (see 'doResolve').
-      const data = {
-        languageId: 'javascript',
-        uri: document.uri,
-        offset: offset
-      };
-      return {
-        uri: document.uri,
-        position: position,
-        label: entry.name,
-        sortText: entry.sortText,
-        kind: convertKind(entry.kind),
-        data
-      };
-    }) || [];
+    return (
+      jsCompletion?.entries.map((entry) => {
+        // Data used for resolving item details (see 'doResolve').
+        const data = {
+          languageId: 'javascript',
+          uri: document.uri,
+          offset: offset,
+        };
+        return {
+          uri: document.uri,
+          position: position,
+          label: entry.name,
+          sortText: entry.sortText,
+          kind: convertKind(entry.kind),
+          data,
+        };
+      }) || []
+    );
   }
 
   doSignatureHelp(

@@ -9,7 +9,7 @@ import {
   RequestType,
   TextDocumentSyncKind,
   Connection,
-  } from 'vscode-languageserver/node';
+} from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import LanguageService from './tsLanguageService';
@@ -72,16 +72,16 @@ connection.onInitialized(() => {
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
     void connection.client.register(
-    DidChangeConfigurationNotification.type,
-    undefined
-  );
-}
+      DidChangeConfigurationNotification.type,
+      undefined
+    );
+  }
 
-// if (hasWorkspaceFolderCapability) {
-//   connection.workspace.onDidChangeWorkspaceFolders((_event) => {
-//     connection.console.log('Workspace folder change event received.');
-//   });
-// }
+  // if (hasWorkspaceFolderCapability) {
+  //   connection.workspace.onDidChangeWorkspaceFolders((_event) => {
+  //     connection.console.log('Workspace folder change event received.');
+  //   });
+  // }
 });
 
 // The example settings

@@ -1,10 +1,12 @@
-import {
-  CompletionItemKind,
-  Connection,
+import type {
+  SignatureHelp,
+  SignatureInformation,
+  ParameterInformation,
   CompletionItem,
 } from 'vscode-languageserver/node';
+import { CompletionItemKind } from 'vscode-languageserver/node';
 import * as ts from 'typescript';
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import { TextDocument, Position } from 'vscode-languageserver-textdocument';
 import { readFileSync } from 'fs';
 import { join, basename, dirname } from 'path';
 
@@ -111,38 +113,67 @@ const convertKind = (kind: string): CompletionItemKind => {
   }
 };
 
-// Server folder.
+const GLOBAL_CONFIG_LIBRARY_NAME = 'global.d.ts';
+
+// Server path.
 const serverPath = basename(__dirname) === 'dist' ? dirname(__dirname) : dirname(dirname(__dirname));
-// TypeScript library folder.
-const librarPath = join(serverPath, '../node_modules/typescript/lib');
-const contents: { [name: string]: string } = {};
+// TypeScript library path.
+const typescriptLibrarPath = join(serverPath, 'node_modules/typescript/lib');
 
 export default class JavascriptService {
-  _connection: Connection;
+  _extensionPath?: string;
   _host: JavascriptServiceHost;
+  _contents: { [name: string]: string } = Object.create(null);
 
-  constructor(connection: Connection) {
+  constructor() {
     this._host = this._getJavascriptServiceHost();
-    this._connection = connection;
   }
 
+  /**
+   * The absolute file path of the directory containing the extension.
+   */
+  setExtensionPath(extensionPath: string): void {
+    this._extensionPath = extensionPath;
+  }
+
+  /**
+   * Load files related to the language features.
+   */
   _loadLibrary(name: string) {
-    let content = contents[name];
-    if (typeof content !== 'string' && librarPath) {
-      const libPath = join(librarPath, name); // From source.
+    if (!this._extensionPath) {
+      console.error(
+        `Unable to load library ${name}: extensionPath is undefined`
+      );
+      return '';
+    }
+
+    let libPath;
+
+    if (name === GLOBAL_CONFIG_LIBRARY_NAME) {
+      libPath = join(this._extensionPath, name);
+    } else {
+      libPath = join(typescriptLibrarPath, name);
+    }
+
+    let content = this._contents[name];
+
+    if (typeof content !== 'string' && libPath) {
       try {
-        content = readFileSync(libPath).toString();
+        content = readFileSync(libPath, 'utf8');
       } catch (e) {
-        this._connection.console.error(
-          `Unable to load library ${name} at ${libPath}`
-        );
+        console.error(`Unable to load library ${name} at ${libPath}`);
         content = '';
       }
-      contents[name] = content;
+
+      this._contents[name] = content;
     }
+
     return content;
   }
 
+  /**
+   * Create a JavasScript service host.
+   */
   _getJavascriptServiceHost() {
     const compilerOptions = {
       allowNonTsExtensions: true,
@@ -157,10 +188,8 @@ export default class JavascriptService {
     // Create the language service host to allow the LS to communicate with the host.
     const host: ts.LanguageServiceHost = {
       getCompilationSettings: () => compilerOptions,
-      getScriptFileNames: () => [currentTextDocument.uri],
-      getScriptKind: () => {
-        return ts.ScriptKind.JS;
-      },
+      getScriptFileNames: () => [currentTextDocument.uri, GLOBAL_CONFIG_LIBRARY_NAME],
+      getScriptKind: () => ts.ScriptKind.JS,
       getScriptVersion: (fileName: string) => {
         if (fileName === currentTextDocument.uri) {
           return String(currentTextDocument.version);
@@ -182,32 +211,16 @@ export default class JavascriptService {
       },
       getCurrentDirectory: () => '',
       getDefaultLibFileName: () => 'es2020.full',
-      readFile: (path: string): string | undefined => {
-        if (path === currentTextDocument.uri) {
-          return currentTextDocument.getText();
-        }
-        return this._loadLibrary(path);
-      },
-      fileExists: (path: string): boolean => {
-        if (path === currentTextDocument.uri) {
-          return true;
-        }
-        return !!this._loadLibrary(path);
-      },
-      directoryExists: (path: string): boolean => {
-        // Typescript tries to first find libraries in node_modules/@types and node_modules/@typescript.
-        if (path.startsWith('node_modules')) {
-          return false;
-        }
-        return true;
-      }
+      readFile: (): string | undefined => undefined,
+      fileExists: (): boolean => false,
+      directoryExists: (): boolean => false
     };
 
     // Create the language service files.
     const jsLanguageService = ts.createLanguageService(host);
 
     return {
-      // Return a new instance of the language service.
+      // Return a language service instance for a document.
       getLanguageService(jsDocument: TextDocument): ts.LanguageService {
         currentTextDocument = jsDocument;
         return jsLanguageService;
@@ -221,6 +234,9 @@ export default class JavascriptService {
     };
   }
 
+  /**
+   * Provide the JavaScript completion items.
+   */
   async doComplete(
     document: TextDocument,
     position: { line: number; character: number },
@@ -250,5 +266,58 @@ export default class JavascriptService {
         data
       };
     }) || [];
+  }
+
+  doSignatureHelp(
+    document: TextDocument,
+    position: Position
+  ): Promise<SignatureHelp | null> {
+    const jsDocument = TextDocument.create(
+      document.uri,
+      'javascript',
+      document.version,
+      document.getText()
+    );
+    const jsLanguageService = this._host.getLanguageService(jsDocument);
+    const signHelp = jsLanguageService.getSignatureHelpItems(
+      jsDocument.uri,
+      jsDocument.offsetAt(position),
+      undefined
+    );
+
+    if (signHelp) {
+      const ret: SignatureHelp = {
+        activeSignature: signHelp.selectedItemIndex,
+        activeParameter: signHelp.argumentIndex,
+        signatures: [],
+      };
+      signHelp.items.forEach((item) => {
+        const signature: SignatureInformation = {
+          label: '',
+          documentation: undefined,
+          parameters: [],
+        };
+
+        signature.label += ts.displayPartsToString(item.prefixDisplayParts);
+        item.parameters.forEach((p, i, a) => {
+          const label = ts.displayPartsToString(p.displayParts);
+          const parameter: ParameterInformation = {
+            label: label,
+            documentation: ts.displayPartsToString(p.documentation),
+          };
+          signature.label += label;
+          signature.parameters?.push(parameter);
+          if (i < a.length - 1) {
+            signature.label += ts.displayPartsToString(
+              item.separatorDisplayParts
+            );
+          }
+        });
+        signature.label += ts.displayPartsToString(item.suffixDisplayParts);
+        ret.signatures.push(signature);
+      });
+      return Promise.resolve(ret);
+    }
+    return Promise.resolve(null);
   }
 }

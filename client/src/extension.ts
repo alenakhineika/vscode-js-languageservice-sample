@@ -43,6 +43,12 @@ export function activate(context: ExtensionContext) {
 
   // Start the client. This will also launch the server.
   client.start();
+
+  // Send the extension path to the server.
+  void client.sendRequest(
+    'SET_EXTENSION_PATH',
+    context.extensionPath
+  );
 }
 
 export function deactivate(): Thenable<void> | undefined {

@@ -1,56 +1,58 @@
 {
-	"name": "vscode-js-languageservice-sample",
-	"description": "LSP Example for multiple languages support",
-	"author": "Alena Khineika",
-	"license": "MIT",
-	"version": "0.0.1",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/alenakhineika/vscode-js-languageservice-sample"
-	},
-	"categories": [],
-	"keywords": [],
-	"engines": {
+  "name": "vscode-js-languageservice-sample",
+  "description": "LSP Example for multiple languages support",
+  "author": "Alena Khineika",
+  "license": "MIT",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alenakhineika/vscode-js-languageservice-sample"
+  },
+  "categories": [],
+  "keywords": [],
+  "engines": {
     "vscode": "^1.71.0",
     "node": "^16.16.0",
     "npm": "^8.8.0"
   },
-	"activationEvents": [],
-	"main": "./client/out/extension",
-	"contributes": {
-		"languages": [
-			{
-				"id": "mongodb",
-				"aliases": [
+  "activationEvents": [
+    "onLanguage:mongodb"
+  ],
+  "main": "./client/out/extension",
+  "contributes": {
+    "languages": [
+      {
+        "id": "mongodb",
+        "aliases": [
           "MongoDB",
           "mongodb"
         ],
-				"extensions": [
-					".mongodb"
-				]
-			}
-		],
-		"grammars": [
-			{
-				"language": "mongodb",
-				"scopeName": "source.mongodb",
-				"path": "./syntaxes/mongodb.tmLanguage.json"
-			}
-		]
-	},
-	"scripts": {
-		"vscode:prepublish": "cd client && npm install && cd .. && npm run compile",
-		"compile": "tsc -b",
-		"watch": "tsc -b -w",
-		"lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd .."
-	},
-	"devDependencies": {
-		"@types/mocha": "^5.2.7",
-		"@types/node": "^16.11.7",
-		"@typescript-eslint/eslint-plugin": "^4.16.0",
-		"@typescript-eslint/parser": "^4.16.0",
-		"eslint": "^7.21.0",
-		"typescript": "^4.8.4"
-	}
+        "extensions": [
+          ".mongodb"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "mongodb",
+        "scopeName": "source.mongodb",
+        "path": "./syntaxes/mongodb.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "cd client && npm install && cd .. && npm run compile",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd .."
+  },
+  "devDependencies": {
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^16.11.7",
+    "@typescript-eslint/eslint-plugin": "^4.16.0",
+    "@typescript-eslint/parser": "^4.16.0",
+    "eslint": "^7.21.0",
+    "typescript": "^4.8.4"
+  }
 }

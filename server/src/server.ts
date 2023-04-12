@@ -12,8 +12,7 @@ import {
   } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import MongoDBService from './mongodb/languageService';
-import JavascriptService from './javascript/languageService';
+import LanguageService from './tsLanguageService';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -23,17 +22,14 @@ const connection: Connection = createConnection(ProposedFeatures.all);
 // The text document manager supports full document sync only.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
-// MongoDB language features service.
-const mongoDBService = new MongoDBService(connection);
-
-// JavaScript language features service.
-const javascriptService = new JavascriptService(connection);
+// The TypeScript language service.
+const tsLanguageService = new LanguageService();
 
 let hasConfigurationCapability = false;
-  // let hasWorkspaceFolderCapability = false;
-  // let hasDiagnosticRelatedInformationCapability = false;
+// let hasWorkspaceFolderCapability = false;
+// let hasDiagnosticRelatedInformationCapability = false;
 
-  connection.onInitialize((params: InitializeParams) => {
+connection.onInitialize((params: InitializeParams) => {
   const capabilities = params.capabilities;
 
   // Does the client support the `workspace/configuration` request?
@@ -53,18 +49,23 @@ let hasConfigurationCapability = false;
   return {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Incremental,
-      // Tell the client that the server supports code completion
+      // Tell the client that the server supports code completion.
       completionProvider: {
         resolveProvider: true,
         triggerCharacters: ['.'],
+      },
+      // Tell the client that the server supports help signatures.
+      signatureHelpProvider: {
+        resolveProvider: true,
+        triggerCharacters: [',', '('],
       },
       // documentFormattingProvider: true,
       // documentRangeFormattingProvider: true,
       // codeLensProvider: {
       //   resolveProvider: true
       // }
-      },
-    };
+    },
+  };
 });
 
 connection.onInitialized(() => {
@@ -139,7 +140,12 @@ connection.onDidChangeWatchedFiles((/* _change */) => {
   // );
 });
 
-// This handler provides the list of the completion items.
+// Set the extension path.
+connection.onRequest('SET_EXTENSION_PATH', (extensionPath) => {
+  tsLanguageService.setExtensionPath(extensionPath);
+});
+
+// Provide completion items.
 connection.onCompletion(async (params: TextDocumentPositionParams) => {
   const document = documents.get(params.textDocument.uri);
 
@@ -147,10 +153,21 @@ connection.onCompletion(async (params: TextDocumentPositionParams) => {
     return [];
   }
 
-  const mongodbCompletions = await mongoDBService.doComplete();
-  const javascriptCompletions = await javascriptService.doComplete(document, params.position);
+  return tsLanguageService.doComplete(document, params.position);
+});
 
-  return [...mongodbCompletions, ...javascriptCompletions];
+// Provide help signatures.
+connection.onSignatureHelp((signatureHelpParms) => {
+  const document = documents.get(signatureHelpParms.textDocument.uri);
+
+  if (!document) {
+    return Promise.resolve(null);
+  }
+
+  return tsLanguageService.doSignatureHelp(
+    document,
+    signatureHelpParms.position
+  );
 });
 
 // This handler resolves additional information for the item selected in

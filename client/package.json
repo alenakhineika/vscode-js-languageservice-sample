@@ -9,12 +9,12 @@
     "url": "https://github.com/alenakhineika/vscode-js-languageservice-sample"
   },
   "engines": {
-    "vscode": "^1.71.0",
+    "vscode": "^1.77.0",
     "node": "^16.16.0",
-    "npm": "^8.8.0"
+    "npm": "^8.15.1"
   },
   "dependencies": {
-    "vscode-languageclient": "^8.0.2"
+    "vscode-languageclient": "^8.1.0"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
